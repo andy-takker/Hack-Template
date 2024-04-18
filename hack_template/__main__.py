@@ -2,8 +2,8 @@ import logging
 
 from aiomisc import Service, entrypoint
 
-from hack_template.rest.args import RESTParser
-from hack_template.rest.deps import config_deps
+from hack_template.args import RESTParser
+from hack_template.deps import config_deps
 from hack_template.rest.service import REST
 
 log = logging.getLogger(__name__)

@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from starlette.middleware import Middleware
 
-from hack_template.api.router import router as api_router
+from hack_template.rest.api.router import router as api_router
 from hack_template.utils.auth.base import SecurityManager
 from hack_template.utils.exceptions import (
     HackTemplateException,

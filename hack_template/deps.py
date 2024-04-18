@@ -6,7 +6,7 @@ from fastapi.middleware import Middleware
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from starlette.middleware.cors import CORSMiddleware
 
-from hack_template.rest.args import RESTParser
+from hack_template.args import RESTParser
 from hack_template.utils.auth.base import (
     AUTH_COOKIE,
     AUTH_HEADER,
