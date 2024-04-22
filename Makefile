@@ -1,5 +1,6 @@
 PROJECT_NAME = .hack_template
 TEST_PATH = ./tests/
+PYTHON_VERSION = 3.11
 
 HELP_FUN = \
 	%help; while(<>){push@{$$help{$$2//'options'}},[$$1,$$3] \
@@ -28,8 +29,8 @@ test: ##@Test Run tests with pytest
 test-ci: ##@Test Run tests with pytest and coverage in CI
 	.venv/bin/pytest $(TEST_PATH) --junitxml=./junit.xml --cov=./$(PROJECT_NAME) --cov-report=xml
 
-develop: #
-	python -m venv .venv
+develop: clean_dev ##@Develop Create virtualenv
+	python$(PYTHON_VERSION) -m venv .venv
 	.venv/bin/pip install -U pip poetry
 	.venv/bin/poetry config virtualenvs.create false
 	.venv/bin/poetry install
@@ -40,8 +41,14 @@ local: ##@Develop Run dev containers for test
 local_down: ##@Develop Stop dev containers with delete volumes
 	docker compose -f docker-compose.dev.yaml down -v
 
-alembic-upgrade-head:
-	.venv/bin/python -m hack_template.db --pg-dsn=$(APP_PG_DSN) upgrade head
+alembic-upgrade-head: ##@Database Run alembic upgrade head
+	.venv/bin/python -m hack_template.db --pg-dsn=$(APP_DB_PG_DSN) upgrade head
 
-alembic-downgrade:
-	.venv/bin/python -m hack_template.db --pg-dsn=$(APP_PG_DSN) downgrade -1
+alembic-downgrade:  ##@Database Run alembic downgrade to previous version
+	.venv/bin/python -m hack_template.db --pg-dsn=$(APP_DB_PG_DSN) downgrade -1
+
+alembic-revision:  ##@Database New alembic revision
+	.venv/bin/python -m hack_template.db --pg-dsn=$(APP_DB_PG_DSN) revision --autogenerate
+
+clean_dev:  ##@Develop Remove virtualenv
+	rm -rf .venv

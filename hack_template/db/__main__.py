@@ -4,7 +4,7 @@ import os
 
 from alembic.config import CommandLine
 
-from hack_template.utils.db import make_alembic_config
+from hack_template.db.utils import make_alembic_config
 
 DEFAULT_PG_DSN = "postgresql://pguser:pgpass@127.0.0.1/pgdb"
 
