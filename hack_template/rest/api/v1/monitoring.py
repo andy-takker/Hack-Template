@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from hack_template.utils.rest.overrides import GetSessionFactory
+from hack_template.rest.overrides import GetSessionFactory
 
 log = logging.getLogger(__name__)
 

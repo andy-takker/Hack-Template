@@ -1,20 +1,22 @@
 import argclass
 
-from hack_template.utils.args import (
+from hack_template.common.args import (
     DatabaseGroup,
     HostPortGroup,
     LogGroup,
     ProjectGroup,
+    RedisGroup,
     SecurityGroup,
+    TelegramGroup,
 )
 
 
-class RESTParser(argclass.Parser):
+class Parser(argclass.Parser):
     debug: bool = argclass.Argument(
         "-D",
         "--debug",
-        action="store_true",
         default=False,
+        type=lambda x: x.lower() == "true",
     )
     pool_size: int = argclass.Argument(
         "-s", "--pool-size", type=int, default=4, help="Thread pool size"
@@ -25,3 +27,5 @@ class RESTParser(argclass.Parser):
     project = ProjectGroup(title="Project options")
     db = DatabaseGroup(title="Database options")
     security = SecurityGroup(title="Security options")
+    telegram = TelegramGroup(title="Telegram options")
+    redis = RedisGroup(title="Redis options")

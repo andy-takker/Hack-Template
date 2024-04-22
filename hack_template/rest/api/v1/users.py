@@ -2,25 +2,25 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, Security
 
-from hack_template.utils.auth.base import AUTH_COOKIE
-from hack_template.utils.auth.models import AuthTokenModel, AuthUser
-from hack_template.utils.rest.models import StatusResponse
-from hack_template.utils.rest.overrides import (
-    REQUIRE_ADMIN_AUTH,
-    REQUIRE_AUTH,
-    GetUserDispatcher,
-    GetUserStorage,
-)
-from hack_template.utils.users.base import UserType
-from hack_template.utils.users.dispatcher import UserDispatcher
-from hack_template.utils.users.models import (
+from hack_template.common.users.base import UserType
+from hack_template.common.users.models import (
     CreateUserModel,
     LoginUserModel,
     UpdateUserModel,
     UserModel,
     UserPaginationModel,
 )
-from hack_template.utils.users.storage import UserStorage
+from hack_template.common.users.storage import UserStorage
+from hack_template.rest.auth.base import AUTH_COOKIE
+from hack_template.rest.auth.models import AuthTokenModel, AuthUser
+from hack_template.rest.models import StatusResponse
+from hack_template.rest.overrides import (
+    REQUIRE_ADMIN_AUTH,
+    REQUIRE_AUTH,
+    GetUserDispatcher,
+    GetUserStorage,
+)
+from hack_template.rest.users.dispatcher import UserDispatcher
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -85,7 +85,7 @@ async def get_user(
     user_id: int,
     user_storage: UserStorage = Depends(GetUserStorage),
 ) -> UserModel:
-    user = await user_storage.read_by_id(user_id=user_id)
+    user = await user_storage.get_by_id(user_id=user_id)
     if user is None:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
     return user

@@ -1,29 +1,38 @@
 from collections.abc import AsyncGenerator, Sequence
 from http import HTTPMethod
 
+import ujson
+from aiogram import BaseMiddleware, Bot, Dispatcher
+from aiogram.enums import ParseMode
+from aiogram.fsm.storage.base import BaseStorage
+from aiogram.fsm.storage.memory import MemoryStorage, SimpleEventIsolation
+from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
 from aiomisc_dependency import dependency
 from fastapi.middleware import Middleware
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from starlette.middleware.cors import CORSMiddleware
 
-from hack_template.args import RESTParser
-from hack_template.utils.auth.base import (
+from hack_template.args import Parser
+from hack_template.bot.middlewares.deps import DepsMiddleware
+from hack_template.bot.middlewares.user import UserMiddleware
+from hack_template.common.telegram.storage import TelegramStorage
+from hack_template.common.users.storage import UserStorage
+from hack_template.db.utils import (
+    create_async_engine,
+    create_async_session_factory,
+)
+from hack_template.rest.auth.base import (
     AUTH_COOKIE,
     AUTH_HEADER,
     IAuthProvider,
     SecurityManager,
 )
-from hack_template.utils.auth.jwt import JwtAuthProvider, JwtProcessor
-from hack_template.utils.auth.passgen import Passgen
-from hack_template.utils.db import (
-    create_async_engine,
-    create_async_session_factory,
-)
-from hack_template.utils.users.dispatcher import UserDispatcher
-from hack_template.utils.users.storage import UserStorage
+from hack_template.rest.auth.jwt import JwtAuthProvider, JwtProcessor
+from hack_template.rest.auth.passgen import Passgen
+from hack_template.rest.users.dispatcher import UserDispatcher
 
 
-def config_deps(parser: RESTParser) -> None:  # noqa: C901
+def config_deps(parser: Parser) -> None:  # noqa: C901
     @dependency
     async def engine() -> AsyncGenerator[AsyncEngine, None]:
         engine = create_async_engine(
@@ -97,3 +106,61 @@ def config_deps(parser: RESTParser) -> None:  # noqa: C901
         return UserDispatcher(
             user_storage=user_storage, auth_provider=auth_provider, passgen=passgen
         )
+
+    @dependency
+    def bot() -> Bot:
+        return Bot(
+            token=parser.telegram.bot_token,
+            parse_mode=ParseMode.HTML,
+        )
+
+    @dependency
+    def fsm_storage() -> BaseStorage:
+        if parser.debug:
+            return MemoryStorage()
+        return RedisStorage.from_url(
+            url=str(parser.redis.redis_dsn),
+            key_builder=DefaultKeyBuilder(with_destiny=True),
+            json_loads=ujson.loads,
+            json_dumps=ujson.dumps,
+        )
+
+    @dependency
+    def dispatcher(
+        fsm_storage: BaseStorage,
+    ) -> Dispatcher:
+        return Dispatcher(
+            storage=fsm_storage,
+            events_isolation=SimpleEventIsolation(),
+        )
+
+    @dependency
+    def telegram_storage(
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> TelegramStorage:
+        return TelegramStorage(
+            session_factory=session_factory,
+        )
+
+    @dependency
+    def user_middleware(telegram_storage: TelegramStorage) -> BaseMiddleware:
+        return UserMiddleware(telegram_storage=telegram_storage)
+
+    @dependency
+    def deps_middleware(
+        user_storage: UserStorage,
+        telegram_storage: TelegramStorage,
+    ) -> BaseMiddleware:
+        return DepsMiddleware(
+            deps={
+                "user_storage": user_storage,
+                "telegram_storage": telegram_storage,
+            },
+        )
+
+    @dependency
+    def bot_middlewares(
+        user_middleware: BaseMiddleware,
+        deps_middleware: BaseMiddleware,
+    ) -> Sequence[BaseMiddleware]:
+        return (user_middleware, deps_middleware)

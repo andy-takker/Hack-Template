@@ -5,18 +5,19 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from starlette.middleware import Middleware
 
-from hack_template.rest.api.router import router as api_router
-from hack_template.utils.auth.base import SecurityManager
-from hack_template.utils.exceptions import (
+from hack_template.common.exceptions import (
     HackTemplateException,
     UserWithUsernameAlreadyExistsException,
 )
-from hack_template.utils.rest.exception_handlers import (
+from hack_template.common.users.storage import UserStorage
+from hack_template.rest.api.router import router as api_router
+from hack_template.rest.auth.base import SecurityManager
+from hack_template.rest.exception_handlers import (
     http_exception_handler,
     internal_server_error_handler,
     user_already_exists_handler,
 )
-from hack_template.utils.rest.overrides import (
+from hack_template.rest.overrides import (
     MAYBE_AUTH,
     REQUIRE_ADMIN_AUTH,
     REQUIRE_AUTH,
@@ -25,8 +26,7 @@ from hack_template.utils.rest.overrides import (
     GetUserDispatcher,
     GetUserStorage,
 )
-from hack_template.utils.users.dispatcher import UserDispatcher
-from hack_template.utils.users.storage import UserStorage
+from hack_template.rest.users.dispatcher import UserDispatcher
 
 ExceptionHandlersType = tuple[tuple[type[Exception], Callable], ...]
 
@@ -39,6 +39,7 @@ class REST(UvicornService):
         "version",
     )
     __dependencies__ = (
+        "session_factory",
         "middlewares",
         "user_storage",
         "security_manager",

@@ -2,7 +2,8 @@ import logging
 
 from aiomisc import Service, entrypoint
 
-from hack_template.args import RESTParser
+from hack_template.args import Parser
+from hack_template.bot.service import TelegramBotService
 from hack_template.deps import config_deps
 from hack_template.rest.service import REST
 
@@ -10,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 def main() -> None:
-    parser = RESTParser(auto_env_var_prefix="APP_")
+    parser = Parser(auto_env_var_prefix="APP_")
     parser.parse_args([])
     parser.sanitize_env()
     config_deps(parser)
@@ -24,6 +25,7 @@ def main() -> None:
             description=parser.project.description,
             version=parser.project.version,
         ),
+        TelegramBotService(),
     ]
 
     with entrypoint(

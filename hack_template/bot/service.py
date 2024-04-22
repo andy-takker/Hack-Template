@@ -7,8 +7,9 @@ from aiogram_dialog import setup_dialogs
 from aiogram_dialog.api.exceptions import UnknownIntent, UnknownState
 from aiomisc import Service
 
-from hack_template.utils.bot.handlers import on_unknown_intent, on_unknown_state
-from hack_template.utils.bot.ui_commands import set_ui_commands
+from hack_template.bot.commands.ui_commands import set_ui_commands
+from hack_template.bot.dialogs.router import register_dialogs
+from hack_template.bot.handlers import on_unknown_intent, on_unknown_state
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +32,9 @@ class TelegramBotService(Service):
         self.start_event.set()
         log.info("Start polling")
         await self.dispatcher.start_polling(self.bot)
+
+    async def stop(self, exception: Exception | None = None) -> None:
+        await self.bot.session.close()
 
     async def _setup_bot(self) -> None:
         await set_ui_commands(self.bot)
