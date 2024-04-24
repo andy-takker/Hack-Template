@@ -1,4 +1,4 @@
-PROJECT_NAME = .hack_template
+PROJECT_NAME = hack_template
 TEST_PATH = ./tests/
 PYTHON_VERSION = 3.11
 
@@ -12,10 +12,8 @@ help: ##@Help Show this help
 	@echo -e "Usage: make [target] ...\n"
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
 
-lint-ci: flake ruff bandit mypy  ##@Linting Run all linters in CI
+lint-ci: ruff mypy  ##@Linting Run all linters in CI
 
-flake: ##@Linting Run flake8
-	.venv/bin/flake8 --max-line-length 88 --format=default ./$(PROJECT_NAME) 2>&1 | tee flake8.txt
 
 ruff: ##@Linting Run ruff
 	.venv/bin/ruff check ./$(PROJECT_NAME)
@@ -42,13 +40,19 @@ local_down: ##@Develop Stop dev containers with delete volumes
 	docker compose -f docker-compose.dev.yaml down -v
 
 alembic-upgrade-head: ##@Database Run alembic upgrade head
-	.venv/bin/python -m hack_template.db --pg-dsn=$(APP_DB_PG_DSN) upgrade head
+	.venv/bin/python -m $(PROJECT_NAME).db --pg-dsn=$(APP_DB_PG_DSN) upgrade head
 
 alembic-downgrade:  ##@Database Run alembic downgrade to previous version
-	.venv/bin/python -m hack_template.db --pg-dsn=$(APP_DB_PG_DSN) downgrade -1
+	.venv/bin/python -m $(PROJECT_NAME).db --pg-dsn=$(APP_DB_PG_DSN) downgrade -1
 
 alembic-revision:  ##@Database New alembic revision
-	.venv/bin/python -m hack_template.db --pg-dsn=$(APP_DB_PG_DSN) revision --autogenerate
+	.venv/bin/python -m $(PROJECT_NAME).db --pg-dsn=$(APP_DB_PG_DSN) revision --autogenerate
+
+docker-alembic-upgrade-head: ##@Database Run alembic upgrade head in docker
+	docker-compose exec backend python -m $(PROJECT_NAME).db upgrade head
 
 clean_dev:  ##@Develop Remove virtualenv
 	rm -rf .venv
+
+cloc: ##@Help Run cloc
+	cloc --exclude-dir=$(shell tr '\n' ',' < .clocignore) .

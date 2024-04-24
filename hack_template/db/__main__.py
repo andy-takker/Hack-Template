@@ -16,8 +16,8 @@ def main() -> None:
     alembic.parser.formatter_class = argparse.ArgumentDefaultsHelpFormatter
     alembic.parser.add_argument(
         "--pg-dsn",
-        default=os.getenv("APP_PG_DSN", DEFAULT_PG_DSN),
-        help="Database URL [env var: APP_PG_DSN]",
+        default=os.getenv("APP_DB_PG_DSN", DEFAULT_PG_DSN),
+        help="Database URL [env var: APP_DB_PG_DSN]",
     )
 
     options = alembic.parser.parse_args()
