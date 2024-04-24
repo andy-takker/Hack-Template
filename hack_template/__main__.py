@@ -1,6 +1,7 @@
 import logging
 
 from aiomisc import Service, entrypoint
+from aiomisc_log import basic_config
 
 from hack_template.args import Parser
 from hack_template.bot.service import TelegramBotService
@@ -15,10 +16,11 @@ def main() -> None:
     parser.parse_args([])
     parser.sanitize_env()
     config_deps(parser)
+    basic_config(level=parser.log.level, log_format=parser.log.format)
 
     services: list[Service] = [
         REST(
-            address=parser.http.host,
+            host=parser.http.host,
             port=parser.http.port,
             debug=parser.debug,
             title=parser.project.title,

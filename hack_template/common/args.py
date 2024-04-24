@@ -19,7 +19,7 @@ class SecurityGroup(argclass.Group):
 
 
 class LogGroup(argclass.Group):
-    level: LogLevel = argclass.EnumArgument(LogLevel, default=LogLevel.debug)
+    level: LogLevel = argclass.EnumArgument(LogLevel, default=LogLevel.info)
     format: LogFormat = argclass.EnumArgument(LogFormat, default=LogFormat.color)
 
 

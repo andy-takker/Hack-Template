@@ -40,7 +40,7 @@ class REST(UvicornService):
     )
     __dependencies__ = (
         "session_factory",
-        "middlewares",
+        "rest_middlewares",
         "user_storage",
         "security_manager",
         "user_dispatcher",
@@ -59,7 +59,7 @@ class REST(UvicornService):
 
     session_factory: async_sessionmaker[AsyncSession]
     security_manager: SecurityManager
-    middlewares: Sequence[Middleware]
+    rest_middlewares: Sequence[Middleware]
     user_storage: UserStorage
     user_dispatcher: UserDispatcher
 
@@ -69,6 +69,9 @@ class REST(UvicornService):
             title=self.title,
             description=self.description,
             version=self.version,
+            openapi_url="/docs/openapi.json",
+            docs_url="/docs/swagger",
+            redoc_url="/docs/redoc",
         )
         self._add_middlewares(app)
         self._add_routes(app)
@@ -77,7 +80,7 @@ class REST(UvicornService):
         return app
 
     def _add_middlewares(self, app: FastAPI) -> None:
-        for middleware in self.middlewares[::-1]:
+        for middleware in self.rest_middlewares[::-1]:
             app.user_middleware.append(middleware)
 
     def _add_routes(self, app: FastAPI) -> None:

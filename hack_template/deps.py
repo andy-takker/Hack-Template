@@ -1,5 +1,4 @@
 from collections.abc import AsyncGenerator, Sequence
-from http import HTTPMethod
 
 import ujson
 from aiogram import BaseMiddleware, Bot, Dispatcher
@@ -10,7 +9,6 @@ from aiogram.fsm.storage.redis import DefaultKeyBuilder, RedisStorage
 from aiomisc_dependency import dependency
 from fastapi.middleware import Middleware
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
-from starlette.middleware.cors import CORSMiddleware
 
 from hack_template.args import Parser
 from hack_template.bot.middlewares.deps import DepsMiddleware
@@ -29,6 +27,7 @@ from hack_template.rest.auth.base import (
 )
 from hack_template.rest.auth.jwt import JwtAuthProvider, JwtProcessor
 from hack_template.rest.auth.passgen import Passgen
+from hack_template.rest.middlewares import get_cors_middleware
 from hack_template.rest.users.dispatcher import UserDispatcher
 
 
@@ -79,22 +78,10 @@ def config_deps(parser: Parser) -> None:  # noqa: C901
 
     @dependency
     def cors_middleware() -> Middleware:
-        return Middleware(
-            CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=[
-                HTTPMethod.OPTIONS,
-                HTTPMethod.GET,
-                HTTPMethod.HEAD,
-                HTTPMethod.POST,
-                HTTPMethod.DELETE,
-            ],
-            allow_headers=["*"],
-        )
+        return get_cors_middleware()
 
     @dependency
-    def middlewares(
+    def rest_middlewares(
         cors_middleware: Middleware,
     ) -> Sequence[Middleware]:
         return (cors_middleware,)

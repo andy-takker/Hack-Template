@@ -27,7 +27,7 @@ def stairway_db_name() -> str:
 @pytest.fixture(scope="session")
 def pg_dsn(localhost: str, db_name: str) -> str:
     default = f"postgresql+asyncpg://pguser:pgpass@{localhost}:5432/{db_name}"
-    return os.getenv("APP_PG_DSN", default)
+    return os.getenv("APP_DB_PG_DSN", default)
 
 
 @pytest.fixture(scope="session")
@@ -50,13 +50,11 @@ def alembic_config(pg_dsn: str) -> AlembicConfig:
 
 @pytest.fixture
 async def async_engine(
-    base_pg_dsn: str,
     pg_dsn: str,
-    db_name: str,
-    alembic_config: AlembicConfig,
 ):
     engine = create_async_engine(pg_dsn)
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield engine
     async with engine.begin() as conn:

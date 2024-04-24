@@ -24,8 +24,18 @@ Template project for web application which based on Python and React.
 
 ## To-Do List
 
-- [ ] Add telegram bot service
+- [x] Add telegram bot service
 - [ ] Add github actions: check project for linters and tests, bulding docker images
-- [ ] Add python unit tests
-- [ ] Add docker images for backend and frontend
-- [ ] Add nginx conf and image
+- [x] Add python unit tests
+- [x] Add docker images for
+  - [x] nginx conf and image
+  - [x] backend
+  - [ ] frontend
+
+## Expluatation
+
+After starting project via `docker-compose.yaml` you can open docs on:
+
+- [Swagger](http://127.0.0.1/docs/swagger)
+- [Redoc](http://127.0.0.1/docs/redoc)
+- [OpenAPI JSON](http://127.0.0.1/docs/openapi.json)
